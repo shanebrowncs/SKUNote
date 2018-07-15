@@ -1,0 +1,63 @@
+body{
+	background-color: #222222;
+	color: white;
+	font-family: helvetica, arial;
+}
+
+input{
+	margin: 10px 0;
+}
+
+form{
+	margin: 10px 0;
+}
+
+table{
+	text-align: left;
+	width: 80%;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 2%;
+}
+
+tr, th, td{
+	border: 2px solid #111111;
+	background-color: #333333;
+	padding: 5px;
+}
+
+#backbtn{
+	text-align: center;
+}
+
+.btn{
+	border: 2px solid black;	
+	text-align: center;	
+	padding: 10px;
+	background-color: #333333;
+	border-radius: 10px;
+	margin: 10px 0;
+}
+
+.btn:link, .btn:visited{
+	text-decoration: none;
+	color: white;
+}
+
+.btn:hover{
+	background-color: #222222;
+}
+
+#header:link, #header:visited{
+	color: white;
+	text-decoration: none;
+}
+
+#header:hover{
+	text-decoration: underline;
+}
+
+#footer{
+	text-align: center;
+	margin-top: 45%;
+}

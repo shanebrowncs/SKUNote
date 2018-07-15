@@ -1,0 +1,11 @@
+/* FORM ALIGNMENT */
+
+.container{
+	width: 200px;
+	clear: both;
+}
+
+.container input{
+	width: 100%;
+	clear: both;
+}
