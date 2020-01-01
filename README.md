@@ -16,7 +16,7 @@ phpnd - MySQL native driver for PHP
 
 # Installation
 * Clone repository to web root or desired hosting location
-* Create folder in cloned directory named `private` (disallow web access to folder with nginx/apache)
+* Ensure web access to 'private' folder is denied (a .htaccess is given by default, but please test that it works before moving on)
 * Create file in private folder named `mysql.ini`
 * Put mysql user info in like below
 ```
