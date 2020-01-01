@@ -17,6 +17,8 @@ if(!$notes){
 }
 
 $obj = new stdClass;
+$obj->success = true;
+$obj->error = "";
 $obj->sku = htmlspecialchars($_GET['sku'], ENT_QUOTES, 'UTF-8');
 $obj->sku = ltrim($obj->sku, '0');
 $obj->length = count($notes);
