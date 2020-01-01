@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html>
 	<head>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,35 +12,26 @@
 		<a id="header" href="./"><h1>SKU Note</h1></a>
 		
 		<?php
+			require_once("private/dbhandler.php");
+			
 			// Check all inputs
 			if((isset($_POST['sku']) && !empty($_POST['sku']))
 				&& isset($_POST['user']) && !empty($_POST['user'])
 				&& isset($_POST['note']) && !empty($_POST['note'])){
 
 				// Convert posted values to variables
-				$sku = $_POST['sku'];
+				$sku = ltrim($_POST['sku'], '0');
 				$user = $_POST['user'];
 				$note = $_POST['note'];
-				$dt = time();
 
 				// Create SQL connection from saved login details
-				$sql_details = parse_ini_file("private/mysql.ini");
-				$conn = new mysqli($sql_details['host'], $sql_details['user'], $sql_details['password'], $sql_details['database']);
+				$handler = new DBHandler("private/mysql.ini");
 
-				// Insert form data into database
-				$statement = $conn->prepare("INSERT INTO `notetable` (`id`, `sku`, `user`, `note`, `date`) VALUES (NULL, ?, ?, ?, FROM_UNIXTIME(?))");
-				$statement->bind_param("sssi", $sku, $user, $note, $dt);
-				if($statement->execute()){
+				if($handler->add_note($sku, $user, $note)){
 					echo "<h3>Successfully Added Note.</h3>";
 				}else{
 					echo "<h3>Failed to Add Note.</h3>";
 				}
-				
-				// Connect failed guard
-				if($conn->connect_error)
-					die("Failed to connect to mysql");
-
-
 			}else{
 				// No submission, display form
 				echo '<div class="container"><form method="POST" action="addnote.php">
