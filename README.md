@@ -5,7 +5,7 @@ A simple note taking application for businesses with large and changing inventor
 
 # Features
 * Search by SKU number, sorted by date/time
-* Easy form submition, minimal info needed
+* Easy form submission, minimal info needed
 
 # Dependencies
 ```
