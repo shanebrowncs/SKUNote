@@ -54,9 +54,9 @@
 			if($result->num_rows > 0){
 				while($cur = $result->fetch_assoc()){
 					$cur_sanitized = array();
-					$cur_sanitized['note'] = htmlspecialchars($cur['note'], ENT_QUOTES, 'UTF-8');
-					$cur_sanitized['user'] = htmlspecialchars($cur['user'], ENT_QUOTES, 'UTF-8');
-					$cur_sanitized['date'] = htmlspecialchars($cur['date'], ENT_QUOTES, 'UTF-8');
+					$cur_sanitized['note'] = htmlspecialchars_decode($cur['note'], ENT_QUOTES);
+					$cur_sanitized['user'] = htmlspecialchars_decode($cur['user'], ENT_QUOTES);
+					$cur_sanitized['date'] = htmlspecialchars_decode($cur['date'], ENT_QUOTES);
 					array_push($notes, $cur_sanitized);
 				}
 			}
