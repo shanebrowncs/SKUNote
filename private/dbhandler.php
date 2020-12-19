@@ -1,4 +1,6 @@
 <?php
+	require_once __DIR__ . '/util.php';
+
 	class DBHandler{
 		private $conn;
 
@@ -13,10 +15,47 @@
 			}
 		}
 
-		public function add_note($sku, $user, $note){
+		private function get_default_division(){
+			if(!$this->conn){
+				return false;
+			}
+
+			$result = $this->conn->query("SELECT min(id) FROM `divisions` WHERE 1");
+			$obj = $result->fetch_assoc();
+			return $obj['min(id)'];
+		}
+
+		private function get_division_id($name){
+			if(!$this->conn){
+				return false;
+			}
+
+			$stmt = $this->conn->prepare("SELECT id FROM `divisions` WHERE `name`= ?");
+			$stmt->bind_param("s", $name);
+
+			if(!$stmt->execute()){
+				return false;
+			}
+
+			$result = $stmt->get_result();
+
+			if($result->num_rows < 1){
+				return false;
+			}
+
+			$obj = $result->fetch_assoc();
+			return $obj['id'];
+		}
+
+		public function add_note($sku, $user, $note, $division="default"){
 			$sku_stzd = htmlspecialchars($sku, ENT_QUOTES, 'UTF-8');
 			$user_stzd = htmlspecialchars($user, ENT_QUOTES, 'UTF-8');
 			$note_stzd = htmlspecialchars($note, ENT_QUOTES, 'UTF-8');
+
+			// Can't specify divisions if they aren't enabled
+			if($division != "default" && !SKUtil::divisions_enabled()){
+				return false;
+			}
 
 			// No non-numeric skus
 			if(!is_numeric($sku_stzd)){
@@ -26,9 +65,14 @@
 			// Strip zeroes as 000404882 = 404882
 			$sku_stzd = ltrim($sku_stzd, '0');
 
-			$statement = $this->conn->prepare("INSERT INTO `notetable` (`id`, `sku`, `user`, `note`, `date`) VALUES (NULL, ?, ?, ?, FROM_UNIXTIME(?))");
+			$division_id = $this->get_division_id($division);
+			if($division_id === false){
+				return false;
+			}
 
-			$statement->bind_param("sssi", $sku_stzd, $user_stzd, $note_stzd, time());
+			$statement = $this->conn->prepare("INSERT INTO `notetable` (`id`, `sku`, `user`, `note`, `date`, `division`) VALUES (NULL, ?, ?, ?, FROM_UNIXTIME(?), ?)");
+
+			$statement->bind_param("sssii", $sku_stzd, $user_stzd, $note_stzd, time(), $division_id);
 
 			if(!$statement->execute()){
 				return false;
@@ -37,7 +81,7 @@
 			return true;
 		}
 
-		public function retrieve_notes($sku){
+		public function retrieve_notes($sku, $division="all"){
 			$notes = array();
 			if(!$this->conn){
 				return False;
@@ -45,9 +89,14 @@
 
 			$sku = ltrim($sku, '0');
 
-			$statement = $this->conn->prepare("SELECT note,user,date FROM `notetable` WHERE sku = ? ORDER BY date DESC");	
-
-			$statement->bind_param("s", $sku);
+			$statement = null;
+			if(strcmp($division, "all") != 0){
+				$statement = $this->conn->prepare("SELECT `notetable`.`note`, `notetable`.`user`, `notetable`.`date` FROM `notetable` INNER JOIN `divisions` ON `notetable`.`division` = `divisions`.`id` WHERE (`notetable`.`sku`= ? AND `divisions`.`name`= ?) ORDER BY `notetable`.`date` DESC");
+				$statement->bind_param("ss", $sku, $division);
+			}else{
+				$statement = $this->conn->prepare("SELECT note,user,date FROM `notetable` WHERE sku = ? ORDER BY date DESC");
+				$statement->bind_param("s", $sku);
+			}
 			$statement->execute();
 
 			$result = $statement->get_result();
@@ -62,6 +111,22 @@
 			}
 
 			return $notes;
+		}
+
+		public function retrieve_divisions(){
+			if(!$this->conn){
+				return false;
+			}
+
+			$divisions = array();
+
+			if($result = $this->conn->query("SELECT `name` from `divisions` WHERE 1")){
+				while($obj = $result->fetch_assoc()){
+					array_push($divisions, $obj['name']);
+				}
+			}
+
+			return $divisions;
 		}
 	}
 ?>

@@ -12,6 +12,10 @@ form{
 	margin: 10px 0;
 }
 
+select{
+	margin: 10px 0;
+}
+
 table{
 	text-align: left;
 	width: 80%;
