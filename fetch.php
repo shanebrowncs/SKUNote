@@ -8,12 +8,22 @@ if(!isset($_GET['sku']) || empty($_GET['sku'])){
 	SKUtil::die_json("No sku given");
 }
 
+$division = "all";
+
+if(isset($_GET['division']) && !empty($_GET['division'])){
+	if(!SKUtil::divisions_enabled()){
+		SKUtil::die_json("Divisions disabled");
+	}
+
+	$division = $_GET['division'];
+}
+
 $handler = new DBHandler("private/mysql.ini");
 
-$notes = $handler->retrieve_notes($_GET['sku']);
+$notes = $handler->retrieve_notes($_GET['sku'], $division);
 
 if(!$notes){
-	SKUtil::die_json("Database error");	
+	SKUtil::die_json("Database error");
 }
 
 $obj = new stdClass;

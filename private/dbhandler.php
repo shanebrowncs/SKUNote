@@ -47,13 +47,28 @@
 			return $obj['id'];
 		}
 
+		private function add_division($name){
+			if(!$this->conn){
+				return false;
+			}
+
+			$stmt = $this->conn->prepare("INSERT INTO `divisions` (`id`, `name`) VALUES (NULL, ?)");
+			$stmt->bind_param("s", $name);
+
+			if(!$stmt->execute()){
+				return false;
+			}
+
+			return true;
+		}
+
 		public function add_note($sku, $user, $note, $division="default"){
 			$sku_stzd = htmlspecialchars($sku, ENT_QUOTES, 'UTF-8');
 			$user_stzd = htmlspecialchars($user, ENT_QUOTES, 'UTF-8');
 			$note_stzd = htmlspecialchars($note, ENT_QUOTES, 'UTF-8');
 
 			// Can't specify divisions if they aren't enabled
-			if($division != "default" && !SKUtil::divisions_enabled()){
+			if(strcmp($division, "default") != 0 && !SKUtil::divisions_enabled()){
 				return false;
 			}
 
@@ -65,9 +80,16 @@
 			// Strip zeroes as 000404882 = 404882
 			$sku_stzd = ltrim($sku_stzd, '0');
 
-			$division_id = $this->get_division_id($division);
-			if($division_id === false){
-				return false;
+			$division_id = $this->get_default_division();
+			if(strcmp($division, "default") != 0){
+				$division_id = $this->get_division_id($division);
+			}
+			if($division_id === false){ // Division doesn't exist
+				if($this->add_division($division)){
+					$division_id = $this->get_division_id($division);
+				}else{
+					return false;
+				}
 			}
 
 			$statement = $this->conn->prepare("INSERT INTO `notetable` (`id`, `sku`, `user`, `note`, `date`, `division`) VALUES (NULL, ?, ?, ?, FROM_UNIXTIME(?), ?)");
@@ -94,7 +116,7 @@
 				$statement = $this->conn->prepare("SELECT `notetable`.`note`, `notetable`.`user`, `notetable`.`date` FROM `notetable` INNER JOIN `divisions` ON `notetable`.`division` = `divisions`.`id` WHERE (`notetable`.`sku`= ? AND `divisions`.`name`= ?) ORDER BY `notetable`.`date` DESC");
 				$statement->bind_param("ss", $sku, $division);
 			}else{
-				$statement = $this->conn->prepare("SELECT note,user,date FROM `notetable` WHERE sku = ? ORDER BY date DESC");
+				$statement = $this->conn->prepare("SELECT `notetable`.`note`,`notetable`.`user`,`notetable`.`date`,`divisions`.`name` FROM `notetable` INNER JOIN `divisions` ON `notetable`.`division` = `divisions`.`id` WHERE `notetable`.`sku` = ? ORDER BY date DESC");
 				$statement->bind_param("s", $sku);
 			}
 			$statement->execute();
@@ -106,6 +128,9 @@
 					$cur_sanitized['note'] = htmlspecialchars_decode($cur['note'], ENT_QUOTES);
 					$cur_sanitized['user'] = htmlspecialchars_decode($cur['user'], ENT_QUOTES);
 					$cur_sanitized['date'] = htmlspecialchars_decode($cur['date'], ENT_QUOTES);
+					if(SKUtil::divisions_enabled() && strcmp($division, "all") == 0){
+						$cur_sanitized['division'] = $cur['name'];
+					}
 					array_push($notes, $cur_sanitized);
 				}
 			}

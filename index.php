@@ -46,12 +46,20 @@
 					echo '<h3>No Entries Found..</h3>';
 				}else{
 					echo "<h3>SKU: " . $sku . "</h3>";
-					echo '<table><tr><th>Note</th><th>Employee</th><th>Date</th></tr>';
+					if(strcmp($division, "all") == 0){
+						echo '<table><tr><th>Note</th><th>Employee</th><th>Division</th><th>Date</th></tr>';
+					}else{
+						echo '<table><tr><th>Note</th><th>Employee</th><th>Date</th></tr>';
+					}
 
 					// Add each row to table
 					foreach($notes as &$cur){
 						echo '<tr>';
-						echo '<td>' . $cur['note'] . '</td><td>' . $cur['user'] . '</td><td>' . $cur['date'] . '</td>';
+						if(strcmp($division, "all") == 0){
+							echo '<td>' . $cur['note'] . '</td><td>' . $cur['user'] . '</td><td>' . $cur['division'] . '</td><td>' . $cur['date'] . '</td>';
+						}else{
+							echo '<td>' . $cur['note'] . '</td><td>' . $cur['user'] . '</td><td>' . $cur['date'] . '</td>';
+						}
 						echo '</tr>';
 					}
 					echo '</table>';
